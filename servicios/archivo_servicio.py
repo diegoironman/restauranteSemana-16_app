@@ -25,19 +25,36 @@ class ArchivoServicio:
         ruta = self.carpeta_datos / nombre_archivo
 
         with open(ruta, "w", encoding="utf-8") as archivo:
-            json.dump(datos, archivo, indent=4, ensure_ascii=False)
+            json.dump(
+                datos,
+                archivo,
+                indent=4,
+                ensure_ascii=False
+            )
 
     def cargar_productos(self) -> list:
         return self._leer_json("productos.json")
 
+    def guardar_productos(self, productos: list) -> None:
+        self._guardar_json(
+            "productos.json",
+            productos
+        )
+
     def cargar_usuarios(self) -> list:
         return self._leer_json("usuarios.json")
 
-    def guardar_productos(self, productos: list) -> None:
-        self._guardar_json("productos.json", productos)
+    def guardar_usuarios(self, usuarios: list) -> None:
+        self._guardar_json(
+            "usuarios.json",
+            usuarios
+        )
 
     def cargar_ventas(self) -> list:
         return self._leer_json("ventas.json")
 
     def guardar_ventas(self, ventas: list) -> None:
-        self._guardar_json("ventas.json", ventas)
+        self._guardar_json(
+            "ventas.json",
+            ventas
+        )

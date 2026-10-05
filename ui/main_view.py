@@ -556,69 +556,633 @@ class MainView(tk.Frame):
     # USUARIOS
     # =========================================================
 
+        # =========================================================
+    # USUARIOS - SEMANA 16
+    # =========================================================
+
     def mostrar_usuarios(self) -> None:
         self.limpiar_contenido()
 
+        # -----------------------------------------------------
+        # CONTROL DE ACCESO
+        # -----------------------------------------------------
+        if self.usuario_actual.rol != "Administrador":
+            messagebox.showwarning(
+                "Acceso restringido",
+                "Solo un usuario con rol Administrador "
+                "puede gestionar usuarios."
+            )
+
+            tk.Label(
+                self.area_contenido,
+                text="Acceso restringido a la gestión de usuarios.",
+                font=("Arial", 13, "bold")
+            ).pack(pady=40)
+
+            return
+
+        # -----------------------------------------------------
+        # TÍTULO
+        # -----------------------------------------------------
         titulo = tk.Label(
             self.area_contenido,
-            text="Usuarios registrados",
+            text="Gestión de usuarios",
             font=("Arial", 14, "bold")
         )
         titulo.pack(pady=(0, 10))
 
-        contenedor = ttk.LabelFrame(
-            self.area_contenido,
-            text="Información disponible",
-            padding=10
+        panel_principal = ttk.Frame(
+            self.area_contenido
         )
-        contenedor.pack(
+        panel_principal.pack(
             fill="both",
             expand=True
         )
 
-        tabla = ttk.Treeview(
-            contenedor,
-            columns=("usuario", "nombre"),
-            show="headings",
-            height=12
+        # -----------------------------------------------------
+        # FORMULARIO
+        # -----------------------------------------------------
+        formulario = ttk.LabelFrame(
+            panel_principal,
+            text="Datos del usuario",
+            padding=15
+        )
+        formulario.pack(
+            side="left",
+            fill="y",
+            padx=(0, 15)
         )
 
-        tabla.heading(
-            "usuario",
-            text="Usuario"
+        self.usuario_identificador_var = tk.StringVar()
+        self.usuario_nombre_var = tk.StringVar()
+        self.usuario_cuenta_var = tk.StringVar()
+        self.usuario_contrasena_var = tk.StringVar()
+        self.usuario_rol_var = tk.StringVar()
+
+        # Identificador
+        ttk.Label(
+            formulario,
+            text="Identificador:"
+        ).grid(
+            row=0,
+            column=0,
+            sticky="w",
+            pady=6
         )
-        tabla.heading(
+
+        self.usuario_identificador_entry = ttk.Entry(
+            formulario,
+            textvariable=self.usuario_identificador_var,
+            width=25,
+            state="readonly"
+        )
+        self.usuario_identificador_entry.grid(
+            row=0,
+            column=1,
+            padx=(10, 0),
+            pady=6
+        )
+
+        # Nombre
+        ttk.Label(
+            formulario,
+            text="Nombre:"
+        ).grid(
+            row=1,
+            column=0,
+            sticky="w",
+            pady=6
+        )
+
+        self.usuario_nombre_entry = ttk.Entry(
+            formulario,
+            textvariable=self.usuario_nombre_var,
+            width=25
+        )
+        self.usuario_nombre_entry.grid(
+            row=1,
+            column=1,
+            padx=(10, 0),
+            pady=6
+        )
+
+        # Usuario
+        ttk.Label(
+            formulario,
+            text="Usuario:"
+        ).grid(
+            row=2,
+            column=0,
+            sticky="w",
+            pady=6
+        )
+
+        self.usuario_cuenta_entry = ttk.Entry(
+            formulario,
+            textvariable=self.usuario_cuenta_var,
+            width=25
+        )
+        self.usuario_cuenta_entry.grid(
+            row=2,
+            column=1,
+            padx=(10, 0),
+            pady=6
+        )
+
+        # Contraseña
+        ttk.Label(
+            formulario,
+            text="Contraseña:"
+        ).grid(
+            row=3,
+            column=0,
+            sticky="w",
+            pady=6
+        )
+
+        self.usuario_contrasena_entry = ttk.Entry(
+            formulario,
+            textvariable=self.usuario_contrasena_var,
+            width=25,
+            show="*"
+        )
+        self.usuario_contrasena_entry.grid(
+            row=3,
+            column=1,
+            padx=(10, 0),
+            pady=6
+        )
+
+        # Rol
+        ttk.Label(
+            formulario,
+            text="Rol:"
+        ).grid(
+            row=4,
+            column=0,
+            sticky="w",
+            pady=6
+        )
+
+        self.usuario_rol_combo = ttk.Combobox(
+            formulario,
+            textvariable=self.usuario_rol_var,
+            values=(
+                "Empleado",
+                "Cliente"
+            ),
+            state="readonly",
+            width=22
+        )
+        self.usuario_rol_combo.grid(
+            row=4,
+            column=1,
+            padx=(10, 0),
+            pady=6
+        )
+
+        # -----------------------------------------------------
+        # BOTONES
+        # -----------------------------------------------------
+        acciones = ttk.LabelFrame(
+            formulario,
+            text="Acciones",
+            padding=10
+        )
+        acciones.grid(
+            row=5,
+            column=0,
+            columnspan=2,
+            sticky="ew",
+            pady=(15, 0)
+        )
+
+        ttk.Button(
+            acciones,
+            text="Registrar",
+            command=self.registrar_usuario
+        ).grid(
+            row=0,
+            column=0,
+            padx=4,
+            pady=4
+        )
+
+        ttk.Button(
+            acciones,
+            text="Actualizar",
+            command=self.actualizar_usuario
+        ).grid(
+            row=0,
+            column=1,
+            padx=4,
+            pady=4
+        )
+
+        ttk.Button(
+            acciones,
+            text="Eliminar",
+            command=self.eliminar_usuario
+        ).grid(
+            row=1,
+            column=0,
+            padx=4,
+            pady=4
+        )
+
+        ttk.Button(
+            acciones,
+            text="Limpiar",
+            command=self.limpiar_formulario_usuario
+        ).grid(
+            row=1,
+            column=1,
+            padx=4,
+            pady=4
+        )
+
+        # -----------------------------------------------------
+        # TABLA
+        # -----------------------------------------------------
+        listado = ttk.LabelFrame(
+            panel_principal,
+            text="Usuarios registrados",
+            padding=10
+        )
+        listado.pack(
+            side="left",
+            fill="both",
+            expand=True
+        )
+
+        columnas = (
+            "identificador",
+            "nombre",
+            "usuario",
+            "rol"
+        )
+
+        self.tabla_usuarios = ttk.Treeview(
+            listado,
+            columns=columnas,
+            show="headings",
+            height=14
+        )
+
+        self.tabla_usuarios.heading(
+            "identificador",
+            text="ID"
+        )
+        self.tabla_usuarios.heading(
             "nombre",
             text="Nombre"
         )
-
-        tabla.column(
+        self.tabla_usuarios.heading(
             "usuario",
-            width=180,
+            text="Usuario"
+        )
+        self.tabla_usuarios.heading(
+            "rol",
+            text="Rol"
+        )
+
+        self.tabla_usuarios.column(
+            "identificador",
+            width=70,
             anchor="center"
         )
-        tabla.column(
+        self.tabla_usuarios.column(
             "nombre",
-            width=350
+            width=150
+        )
+        self.tabla_usuarios.column(
+            "usuario",
+            width=100
+        )
+        self.tabla_usuarios.column(
+            "rol",
+            width=90,
+            anchor="center"
         )
 
-        tabla.pack(
+        barra = ttk.Scrollbar(
+            listado,
+            orient="vertical",
+            command=self.tabla_usuarios.yview
+        )
+
+        self.tabla_usuarios.configure(
+            yscrollcommand=barra.set
+        )
+
+        self.tabla_usuarios.pack(
+            side="left",
             fill="both",
             expand=True
         )
 
-        for usuario in (
+        barra.pack(
+            side="right",
+            fill="y"
+        )
+
+        # =====================================================
+        # EVENTOS SEMANA 16
+        # =====================================================
+
+        self.tabla_usuarios.bind(
+            "<<TreeviewSelect>>",
+            self.al_seleccionar_usuario
+        )
+
+        self.usuario_rol_combo.bind(
+            "<<ComboboxSelected>>",
+            self.al_cambiar_rol
+        )
+
+        widgets_formulario = (
+            self.usuario_nombre_entry,
+            self.usuario_cuenta_entry,
+            self.usuario_contrasena_entry,
+            self.usuario_rol_combo
+        )
+
+        for widget in widgets_formulario:
+            widget.bind(
+                "<Return>",
+                self.al_presionar_enter
+            )
+
+            widget.bind(
+                "<Escape>",
+                self.al_presionar_escape
+            )
+
+        self.tabla_usuarios.bind(
+            "<Escape>",
+            self.al_presionar_escape
+        )
+
+        self.actualizar_tabla_usuarios()
+        self.limpiar_formulario_usuario()
+
+    # =========================================================
+    # OBTENER DATOS
+    # =========================================================
+
+    def obtener_datos_formulario_usuario(self):
+        return (
+            self.usuario_identificador_var.get(),
+            self.usuario_nombre_var.get(),
+            self.usuario_cuenta_var.get(),
+            self.usuario_contrasena_var.get(),
+            self.usuario_rol_var.get()
+        )
+
+    # =========================================================
+    # ACTUALIZAR TABLA
+    # =========================================================
+
+    def actualizar_tabla_usuarios(self) -> None:
+        for fila in self.tabla_usuarios.get_children():
+            self.tabla_usuarios.delete(fila)
+
+        usuarios = (
             self.restaurante_servicio.listar_usuarios()
-        ):
-            tabla.insert(
+        )
+
+        for usuario in usuarios:
+            self.tabla_usuarios.insert(
                 "",
                 tk.END,
                 values=(
+                    usuario.identificador,
+                    usuario.nombre,
                     usuario.usuario,
-                    usuario.nombre
+                    usuario.rol
                 )
             )
 
+    # =========================================================
+    # LIMPIAR FORMULARIO
+    # =========================================================
+
+    def limpiar_formulario_usuario(self) -> None:
+        nuevo_id = (
+            self.restaurante_servicio
+            .generar_identificador_usuario()
+        )
+
+        self.usuario_identificador_var.set(
+            nuevo_id
+        )
+
+        self.usuario_nombre_var.set("")
+        self.usuario_cuenta_var.set("")
+        self.usuario_contrasena_var.set("")
+        self.usuario_rol_var.set("Cliente")
+
+        if hasattr(self, "tabla_usuarios"):
+            seleccion = (
+                self.tabla_usuarios.selection()
+            )
+
+            if seleccion:
+                self.tabla_usuarios.selection_remove(
+                    seleccion
+                )
+
+        self.usuario_nombre_entry.focus()
+
+    # =========================================================
+    # REGISTRAR
+    # =========================================================
+
+    def registrar_usuario(self) -> None:
+        datos = (
+            self.obtener_datos_formulario_usuario()
+        )
+
+        exito, mensaje = (
+            self.restaurante_servicio.registrar_usuario(
+                *datos
+            )
+        )
+
+        if exito:
+            messagebox.showinfo(
+                "Registro exitoso",
+                mensaje
+            )
+
+            self.actualizar_tabla_usuarios()
+            self.limpiar_formulario_usuario()
+
+        else:
+            messagebox.showwarning(
+                "No se pudo registrar",
+                mensaje
+            )
+
+    # =========================================================
+    # ACTUALIZAR
+    # =========================================================
+
+    def actualizar_usuario(self) -> None:
+        datos = (
+            self.obtener_datos_formulario_usuario()
+        )
+
+        exito, mensaje = (
+            self.restaurante_servicio.actualizar_usuario(
+                *datos
+            )
+        )
+
+        if exito:
+            messagebox.showinfo(
+                "Actualización exitosa",
+                mensaje
+            )
+
+            self.actualizar_tabla_usuarios()
+            self.limpiar_formulario_usuario()
+
+        else:
+            messagebox.showwarning(
+                "No se pudo actualizar",
+                mensaje
+            )
+
+    # =========================================================
+    # ELIMINAR
+    # =========================================================
+
+    def eliminar_usuario(self) -> None:
+        identificador = (
+            self.usuario_identificador_var.get()
+        )
+
+        if not identificador.strip():
+            messagebox.showwarning(
+                "Usuario requerido",
+                "Seleccione el usuario que desea eliminar."
+            )
+            return
+
+        confirmar = messagebox.askyesno(
+            "Confirmar eliminación",
+            "¿Desea eliminar el usuario seleccionado?"
+        )
+
+        if not confirmar:
+            return
+
+        exito, mensaje = (
+            self.restaurante_servicio.eliminar_usuario(
+                identificador,
+                self.usuario_actual.identificador
+            )
+        )
+
+        if exito:
+            messagebox.showinfo(
+                "Eliminación exitosa",
+                mensaje
+            )
+
+            self.actualizar_tabla_usuarios()
+            self.limpiar_formulario_usuario()
+
+        else:
+            messagebox.showwarning(
+                "No se pudo eliminar",
+                mensaje
+            )
+
+    # =========================================================
+    # EVENTO TREEVIEW
+    # =========================================================
+
+    def al_seleccionar_usuario(self, event) -> None:
+        seleccion = (
+            self.tabla_usuarios.selection()
+        )
+
+        if not seleccion:
+            return
+
+        valores = self.tabla_usuarios.item(
+            seleccion[0],
+            "values"
+        )
+
+        identificador = valores[0]
+
+        usuario = (
+            self.restaurante_servicio
+            .buscar_usuario_por_identificador(
+                identificador
+            )
+        )
+
+        if not usuario:
+            return
+
+        self.usuario_identificador_var.set(
+            usuario.identificador
+        )
+
+        self.usuario_nombre_var.set(
+            usuario.nombre
+        )
+
+        self.usuario_cuenta_var.set(
+            usuario.usuario
+        )
+
+        self.usuario_contrasena_var.set(
+            usuario.contrasena
+        )
+
+        self.usuario_rol_var.set(
+            usuario.rol
+        )
+
+    # =========================================================
+    # EVENTO ENTER
+    # =========================================================
+
+    def al_presionar_enter(self, event) -> None:
+        self.registrar_usuario()
+
+    # =========================================================
+    # EVENTO ESCAPE
+    # =========================================================
+
+    def al_presionar_escape(self, event) -> None:
+        self.limpiar_formulario_usuario()
+
+    # =========================================================
+    # EVENTO COMBOBOX
+    # =========================================================
+
+    def al_cambiar_rol(self, event) -> None:
+        rol = self.usuario_rol_var.get()
+
+        if rol == "Empleado":
+            mensaje = (
+                "Rol Empleado seleccionado."
+            )
+        else:
+            mensaje = (
+                "Rol Cliente seleccionado."
+            )
+
+        # Retroalimentación sencilla sin interrumpir
+        # el trabajo del usuario.
+        print(mensaje)
+        
     # =========================================================
     # VENTAS
     # =========================================================

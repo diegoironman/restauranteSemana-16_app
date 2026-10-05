@@ -1,12 +1,23 @@
 [
     {
-        "usuario": "admin",
+        "identificador": "U001",
         "nombre": "Administrador",
-        "contrasena": "1234"
+        "usuario": "admin",
+        "contrasena": "1234",
+        "rol": "Administrador"
     },
     {
-        "usuario": "diego",
+        "identificador": "U002",
         "nombre": "Diego Sánchez",
-        "contrasena": "2026"
+        "usuario": "diego",
+        "contrasena": "2026",
+        "rol": "Administrador"
+    },
+    {
+        "identificador": "U003",
+        "nombre": "Samuel",
+        "usuario": "Samu",
+        "contrasena": "Samu5",
+        "rol": "Empleado"
     }
 ]
